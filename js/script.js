@@ -122,7 +122,6 @@ window.addEventListener('DOMContentLoaded', function() {
 
     let form = document.getElementsByClassName('main-form')[0],
         formBottom = document.getElementById('form'),
-        input = document.getElementsByTagName('input'),
         statusMessage = document.createElement('div');
         statusMessage.classList.add('status');
 
@@ -130,7 +129,14 @@ window.addEventListener('DOMContentLoaded', function() {
         elem.addEventListener('submit', function(e) {
             e.preventDefault();
             elem.appendChild(statusMessage);
+
             let formData = new FormData(elem);
+
+            let obj = {};
+            formData.forEach(function(value, key) {
+                obj[key] = value;
+            });
+            let json = JSON.stringify(obj);
 
             function postData(data) {
 
@@ -143,21 +149,19 @@ window.addEventListener('DOMContentLoaded', function() {
                     request.onreadystatechange = function(){
                         if (request.readyState < 4) {
                             resolve();
-                        } else if (request.readyState === 4) {
-                            if (request.status == 200 && request.status < 300) {
-                                resolve();
-                            }
-                            else {
+                        }   else if (request.readyState === 4 && request.status == 200) {
+                            resolve();
+                        }   else {
                                 reject();
-                            }
                         }
                     };
 
-                    request.send(data);
+                    request.send(json);
                 });
 
             }
 
+            let input = elem.getElementsByTagName('input');
 
             function clearInput() {
                 for (let i = 0; i < input.length; i++) {
@@ -182,4 +186,57 @@ window.addEventListener('DOMContentLoaded', function() {
 
     sendForm(form);
     sendForm(formBottom);
+
+    // Slider
+
+    let slideIndex = 1,
+        slides = document.querySelectorAll('.slider-item'),
+        prev = document.querySelector('.prev'),
+        next = document.querySelector('.next'),
+        dotsWrap = document.querySelector('.slider-dots'),
+        dots = document.querySelectorAll('.dot');
+
+    showSlides(slideIndex);
+
+    function showSlides(n) {
+
+        if (n > slides.length) {
+            slideIndex = 1;
+        }
+        if (n < 1) {
+            slideIndex = slides.length;
+        }
+
+        slides.forEach((item) => item.style.display = 'none');
+        // for (let i = 0; i < slides.length; i++) {
+        //     slides[i].style.display = 'none';
+        // }
+        dots.forEach((item) => item.classList.remove('dot-active'));
+        
+        slides[slideIndex - 1].style.display = 'block';
+        dots[slideIndex - 1].classList.add('dot-active');
+    }
+
+    function plusSlides(n) {
+        showSlides(slideIndex += n);
+    }
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    prev.addEventListener('click', function() {
+        plusSlides(-1);
+    });
+
+    next.addEventListener('click', function() {
+        plusSlides(1);
+    });
+
+    dotsWrap.addEventListener('click', function(event) {
+        for (let i = 0; i < dots.length + 1; i++) {
+            if (event.target.classList.contains('dot') && event.target == dots[i-1]) {
+                currentSlide(i);
+            }
+        }
+    });
 });
